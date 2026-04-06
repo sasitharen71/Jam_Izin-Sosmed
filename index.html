@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="https://public-frontend-cos.metadl.com/mgx/img/favicon_atoms.ico" type="image/x-icon">
+  <title>Sistem Izin Keluar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== RESET & VARIABLES ===== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0a0b1a;
+      --bg-secondary: #0f1128;
+      --bg-card: rgba(18, 20, 44, 0.75);
+      --bg-card-solid: #12142c;
+      --bg-card-hover: rgba(30, 33, 65, 0.8);
+      --bg-input: rgba(15, 17, 40, 0.9);
+      --border-color: rgba(201, 168, 76, 0.15);
+      --border-color-strong: rgba(201, 168, 76, 0.3);
+      --border-gold: #c9a84c;
+      --text-primary: #e8e8ec;
+      --text-secondary: #8b8da0;
+      --text-muted: #5a5c70;
+      --accent-gold: #c9a84c;
+      --accent-gold-dark: #a88a3a;
+      --accent-gold-glow: rgba(201, 168, 76, 0.4);
+      --accent-green: #4ade80;
+      --accent-red: #f87171;
+      --accent-purple: #a78bfa;
+      --accent-yellow: #fbbf24;
+      --accent-blue: #60a5fa;
+      --glass-blur: 16px;
+      --font-display: 'Orbitron', monospace;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ===== ANIMATED BACKGROUND LAYERS ===== */
+    #particleCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bg-gradient-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 40% at 50% 50%, rgba(201, 168, 76, 0.06) 0%, transparent 50%);
+      animation: gradientShift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes gradientShift {
+      0% {
+        background:
+          radial-gradient(ellipse 80% 60% at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 50% at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 60%),
+          radial-gradient(ellipse 70% 40% at 50% 50%, rgba(201, 168, 76, 0.06) 0%, transparent 50%);
+      }
+      50% {
+        background:
+          radial-gradient(ellipse 70% 50% at 30% 40%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+          radial-gradient(ellipse 80% 60% at 70% 60%, rgba(201, 168, 76, 0.1) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 40% at 50% 30%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+      }
+      100% {
+        background:
+          radial-gradient(ellipse 60% 70% at 80% 30%, rgba(168, 85, 247, 0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 70% 50% at 20% 70%, rgba(201, 168, 76, 0.08) 0%, transparent 60%),
+          radial-gradient(ellipse 80% 40% at 60% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+      }
+    }
+
+    .bg-grid-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(201, 168, 76, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201, 168, 76, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%);
+    }
+
+    /* ===== FLOATING ORBS ===== */
+    .floating-orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+      animation: floatOrb 15s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.15), transparent 70%);
+      top: -100px;
+      right: -100px;
+      animation-duration: 18s;
+    }
+
+    .orb-2 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.12), transparent 70%);
+      bottom: 10%;
+      left: -80px;
+      animation-duration: 22s;
+      animation-delay: -5s;
+    }
+
+    .orb-3 {
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.1), transparent 70%);
+      top: 40%;
+      right: 10%;
+      animation-duration: 20s;
+      animation-delay: -8s;
+    }
+
+    .orb-4 {
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(74, 222, 128, 0.08), transparent 70%);
+      bottom: 20%;
+      right: 30%;
+      animation-duration: 25s;
+      animation-delay: -12s;
+    }
+
+    .orb-5 {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.08), transparent 70%);
+      top: 60%;
+      left: 20%;
+      animation-duration: 16s;
+      animation-delay: -3s;
+    }
+
+    @keyframes floatOrb {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(30px, -40px) scale(1.05); }
+      50% { transform: translate(-20px, 20px) scale(0.95); }
+      75% { transform: translate(15px, 30px) scale(1.02); }
+    }
+
+    /* ===== APP WRAPPER ===== */
+    .app-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 24px 40px;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      animation: fadeInDown 0.6s ease-out;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--bg-card);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color-strong);
+      box-shadow: 0 0 20px rgba(201, 168, 76, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .header-icon:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(201, 168, 76, 0.2);
+    }
+
+    .header-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text-primary);
+      text-shadow: 0 0 30px rgba(201, 168, 76, 0.15);
+    }
+
+    .header-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      margin-top: 3px;
+    }
+
+    .clock-wrapper {
+      position: relative;
+    }
+
+    .clock-glow {
+      position: absolute;
+      inset: -4px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(201, 168, 76, 0.2), rgba(168, 85, 247, 0.1));
+      filter: blur(8px);
+      animation: clockPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes clockPulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .clock {
+      position: relative;
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: var(--bg-card);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border-color-strong);
+      border-radius: 14px;
+      padding: 12px 24px;
+      letter-spacing: 4px;
+      text-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
+    }
+
+    /* ===== STATS ===== */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out 0.1s both;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-color-strong);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-card-green:hover {
+      border-color: rgba(74, 222, 128, 0.3);
+      box-shadow: 0 8px 30px rgba(74, 222, 128, 0.1);
+    }
+
+    .stat-card-red:hover {
+      border-color: rgba(248, 113, 113, 0.3);
+      box-shadow: 0 8px 30px rgba(248, 113, 113, 0.1);
+    }
+
+    .stat-icon {
+      font-size: 24px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(201, 168, 76, 0.08);
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .stat-card-green .stat-icon {
+      background: rgba(74, 222, 128, 0.08);
+    }
+
+    .stat-card-red .stat-icon {
+      background: rgba(248, 113, 113, 0.08);
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-value.green { color: var(--accent-green); text-shadow: 0 0 20px rgba(74, 222, 128, 0.3); }
+    .stat-value.red { color: var(--accent-red); text-shadow: 0 0 20px rgba(248, 113, 113, 0.3); }
+
+    /* ===== PANELS (GLASSMORPHISM) ===== */
+    .panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px;
+      transition: border-color 0.3s;
+    }
+
+    .panel:hover {
+      border-color: var(--border-color-strong);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .step-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+      color: #000;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(201, 168, 76, 0.3);
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--accent-gold);
+      text-shadow: 0 0 20px rgba(201, 168, 76, 0.2);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    /* ===== KARYAWAN LIST ===== */
+    .panel-karyawan {
+      border-color: var(--border-color-strong);
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      opacity: 0.5;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--bg-input);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 11px 14px 11px 38px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 15px rgba(201, 168, 76, 0.15);
+    }
+
+    .search-box input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .karyawan-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+
+    .karyawan-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .karyawan-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .karyawan-list::-webkit-scrollbar-thumb {
+      background: var(--border-color-strong);
+      border-radius: 4px;
+    }
+
+    .karyawan-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .karyawan-item:hover {
+      background: var(--bg-card-hover);
+      transform: translateX(2px);
+    }
+
+    .karyawan-item.selected {
+      background: rgba(201, 168, 76, 0.08);
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 15px rgba(201, 168, 76, 0.1);
+    }
+
+    .karyawan-item.on-leave {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .avatar-0 { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .avatar-1 { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+    .avatar-2 { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .avatar-3 { background: linear-gradient(135deg, #9333ea, #7e22ce); }
+    .avatar-4 { background: linear-gradient(135deg, #ea580c, #c2410c); }
+    .avatar-5 { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+    .avatar-6 { background: linear-gradient(135deg, #0891b2, #0e7490); }
+    .avatar-7 { background: linear-gradient(135deg, #be185d, #9d174d); }
+    .avatar-8 { background: linear-gradient(135deg, #4f46e5, #4338ca); }
+    .avatar-9 { background: linear-gradient(135deg, #059669, #047857); }
+
+    .karyawan-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .karyawan-dept {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .karyawan-check {
+      color: var(--accent-gold);
+      font-size: 16px;
+      text-shadow: 0 0 10px rgba(201, 168, 76, 0.5);
+      margin-left: auto;
+    }
+
+    .karyawan-empty {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 30px 10px;
+      font-size: 13px;
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    .btn-tambah {
+      width: 100%;
+      background: transparent;
+      border: 1px dashed var(--border-color-strong);
+      border-radius: 12px;
+      padding: 13px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      z-index: 10;
+    }
+
+    .btn-tambah:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      background: rgba(201, 168, 76, 0.05);
+      box-shadow: 0 0 20px rgba(201, 168, 76, 0.1);
+    }
+
+    /* ===== KARYAWAN ACTIONS ===== */
+    .karyawan-actions {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .btn-edit-karyawan,
+    .btn-delete-karyawan {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .btn-edit-karyawan:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      box-shadow: 0 0 10px rgba(201, 168, 76, 0.15);
+    }
+
+    .btn-delete-karyawan:hover {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.15);
+    }
+
+    /* ===== RIGHT PANEL ===== */
+    .panel-right {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .selected-employee {
+      background: var(--bg-card);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: border-color 0.3s;
+    }
+
+    .selected-employee:hover {
+      border-color: var(--border-color-strong);
+    }
+
+    .selected-employee.empty-state {
+      justify-content: center;
+    }
+
+    .employee-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .employee-info .avatar {
+      width: 50px;
+      height: 50px;
+      font-size: 17px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .employee-name {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .employee-dept {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .btn-ganti {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 9px 18px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ganti:hover {
+      border-color: var(--text-primary);
+      color: var(--text-primary);
+    }
+
+    .empty-employee-msg {
+      color: var(--text-muted);
+      font-size: 14px;
+      font-style: italic;
+      padding: 10px 0;
+    }
+
+    /* ===== KEPERLUAN ===== */
+    .panel-keperluan {
+      border-color: var(--border-color-strong);
+    }
+
+    .keperluan-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .keperluan-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .keperluan-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-gold);
+      transform: translateY(-1px);
+    }
+
+    .keperluan-btn.selected {
+      background: rgba(201, 168, 76, 0.1);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      box-shadow: 0 0 20px rgba(201, 168, 76, 0.15);
+    }
+
+    .keperluan-icon {
+      font-size: 20px;
+    }
+
+    .keterangan-section {
+      margin-bottom: 16px;
+    }
+
+    .keterangan-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .keterangan-input {
+      width: 100%;
+      background: var(--bg-input);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .keterangan-input:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 15px rgba(201, 168, 76, 0.15);
+    }
+
+    .keterangan-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn-mulai {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      color: #000;
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-mulai::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-mulai:not(:disabled):hover::before {
+      left: 100%;
+    }
+
+    .btn-mulai:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-mulai:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(201, 168, 76, 0.4);
+    }
+
+    .btn-mulai-icon {
+      font-size: 18px;
+    }
+
+    /* ===== RIWAYAT ===== */
+    .panel-riwayat {
+      animation: fadeInUp 0.6s ease-out 0.3s both;
+    }
+
+    .riwayat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .riwayat-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+    }
+
+    .btn-hapus {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 7px 16px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-hapus:hover {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.15);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .riwayat-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .riwayat-table thead th {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color-strong);
+      white-space: nowrap;
+    }
+
+    .riwayat-table tbody td {
+      font-size: 13px;
+      color: var(--text-primary);
+      padding: 12px;
+      border-bottom: 1px solid rgba(42, 45, 69, 0.4);
+      white-space: nowrap;
+    }
+
+    .riwayat-table tbody tr {
+      transition: background 0.2s;
+    }
+
+    .riwayat-table tbody tr:hover {
+      background: rgba(201, 168, 76, 0.03);
+    }
+
+    .empty-msg {
+      text-align: center !important;
+      color: var(--text-muted) !important;
+      padding: 40px 12px !important;
+      font-style: italic;
+      white-space: normal !important;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.sedang-keluar {
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--accent-yellow);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .status-badge.sedang-keluar:hover {
+      background: rgba(251, 191, 36, 0.2);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+    }
+
+    .status-badge.tepat-waktu {
+      background: rgba(74, 222, 128, 0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
+
+    .status-badge.terlambat {
+      background: rgba(248, 113, 113, 0.12);
+      color: var(--accent-red);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+    }
+
+    /* ===== FOOTER ===== */
+    .app-footer {
+      text-align: center;
+      padding: 24px 0 0;
+      color: var(--text-muted);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--bg-card-solid);
+      border: 1px solid var(--border-color-strong);
+      border-radius: 18px;
+      padding: 30px;
+      width: 420px;
+      max-width: 90vw;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(201, 168, 76, 0.08);
+      transform: scale(0.95);
+      transition: transform 0.25s;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 22px;
+      color: var(--accent-gold);
+      text-shadow: 0 0 20px rgba(201, 168, 76, 0.2);
+    }
+
+    .modal-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 22px;
+      line-height: 1.6;
+    }
+
+    .modal-field {
+      margin-bottom: 18px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 7px;
+      font-weight: 500;
+    }
+
+    .modal-field input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .modal-field input:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 15px rgba(201, 168, 76, 0.15);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .btn-modal-cancel {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px 22px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-modal-cancel:hover {
+      border-color: var(--text-primary);
+      color: var(--text-primary);
+    }
+
+    .btn-modal-save {
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      color: #000;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-modal-save:hover {
+      box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-modal-delete {
+      background: linear-gradient(135deg, var(--accent-red), #dc2626) !important;
+      color: #fff !important;
+    }
+
+    .btn-modal-delete:hover {
+      box-shadow: 0 4px 20px rgba(248, 113, 113, 0.3) !important;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .app-wrapper {
+        padding: 12px 12px 30px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 14px;
+        align-items: flex-start;
+      }
+
+      .clock {
+        font-size: 22px;
+        padding: 10px 18px;
+      }
+
+      .stats-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      .keperluan-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .selected-employee {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .riwayat-table thead th,
+      .riwayat-table tbody td {
+        padding: 8px 6px;
+        font-size: 11px;
+      }
+
+      .floating-orb {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ANIMATED BACKGROUND -->
+  <canvas id="particleCanvas"></canvas>
+  <div class="bg-gradient-layer"></div>
+  <div class="bg-grid-overlay"></div>
+  <div class="floating-orb orb-1"></div>
+  <div class="floating-orb orb-2"></div>
+  <div class="floating-orb orb-3"></div>
+  <div class="floating-orb orb-4"></div>
+  <div class="floating-orb orb-5"></div>
+
+  <!-- MAIN WRAPPER -->
+  <div class="app-wrapper">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" fill="#F5C542"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5" fill="#F5C542" opacity="0.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5" fill="#F5C542" opacity="0.5"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#F5C542" opacity="0.3"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="header-title">SISTEM IZIN KELUAR</h1>
+          <p class="header-subtitle">MANAJEMEN WAKTU KERJA &middot; 15 MENIT</p>
+        </div>
+      </div>
+      <div class="clock-wrapper">
+        <div class="clock-glow"></div>
+        <div class="clock" id="clock">00:00:00</div>
+      </div>
+    </header>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">&#x1F4CA;</div>
+        <div class="stat-content">
+          <span class="stat-label">TOTAL IZIN HARI INI</span>
+          <span class="stat-value" id="statTotal">0</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card-green">
+        <div class="stat-icon">&#x2705;</div>
+        <div class="stat-content">
+          <span class="stat-label">TEPAT WAKTU</span>
+          <span class="stat-value green" id="statTepatWaktu">0</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card-red">
+        <div class="stat-icon">&#x26A0;&#xFE0F;</div>
+        <div class="stat-content">
+          <span class="stat-label">TERLAMBAT KEMBALI</span>
+          <span class="stat-value red" id="statTerlambat">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- LEFT: PILIH KARYAWAN -->
+      <div class="panel panel-karyawan">
+        <div class="panel-header">
+          <span class="step-badge">1</span>
+          <span class="panel-title">PILIH KARYAWAN</span>
+        </div>
+        <div class="search-box">
+          <span class="search-icon">&#x1F50D;</span>
+          <input type="text" id="searchInput" placeholder="Cari nama atau departemen..." />
+        </div>
+        <div class="karyawan-list" id="karyawanList"></div>
+        <button class="btn-tambah" id="btnTambahKaryawan" type="button">+ Tambah Karyawan Baru</button>
+      </div>
+
+      <!-- RIGHT: DETAIL & KEPERLUAN -->
+      <div class="panel-right">
+        <!-- Selected Employee -->
+        <div class="selected-employee" id="selectedEmployee">
+          <div class="empty-employee-msg" id="emptyEmployeeMsg">Silakan tambahkan karyawan terlebih dahulu</div>
+          <div class="employee-info" id="employeeInfoSection" style="display:none;">
+            <div class="avatar" id="selectedAvatar"></div>
+            <div>
+              <div class="employee-name" id="selectedName"></div>
+              <div class="employee-dept" id="selectedDept"></div>
+            </div>
+          </div>
+          <button class="btn-ganti" id="btnGanti" style="display:none;" type="button">Ganti Karyawan</button>
+        </div>
+
+        <!-- Pilih Keperluan -->
+        <div class="panel panel-keperluan">
+          <div class="panel-header">
+            <span class="step-badge">2</span>
+            <span class="panel-title">PILIH KEPERLUAN &amp; MULAI TIMER</span>
+          </div>
+          <div class="keperluan-grid">
+            <button class="keperluan-btn" data-keperluan="Izin Keluar" type="button">
+              <span class="keperluan-icon">🚻⚡</span>
+              <span>Izin Keluar</span>
+            </button>
+          </div>
+
+          <div class="keterangan-section">
+            <label class="keterangan-label">KETERANGAN TAMBAHAN (OPSIONAL)</label>
+            <input type="text" id="keteranganInput" class="keterangan-input" placeholder="Catatan singkat jika diperlukan..." />
+          </div>
+
+          <button class="btn-mulai" id="btnMulai" disabled type="button">
+            <span class="btn-mulai-icon">&#x23F1;</span>
+            MULAI IZIN KELUAR &mdash; 15 MENIT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIWAYAT -->
+    <div class="panel panel-riwayat">
+      <div class="riwayat-header">
+        <div class="riwayat-title">
+          <span>&#x1F4CB;</span>
+          <span>RIWAYAT IZIN HARI INI</span>
+        </div>
+        <button class="btn-hapus" id="btnHapusRiwayat" type="button">Hapus Riwayat</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="riwayat-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>NAMA KARYAWAN</th>
+              <th>DEPARTEMEN</th>
+              <th>KEPERLUAN</th>
+              <th>WAKTU KELUAR</th>
+              <th>WAKTU KEMBALI</th>
+              <th>DURASI</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="riwayatBody">
+            <tr>
+              <td colspan="8" class="empty-msg">&mdash; Belum ada data izin hari ini &mdash;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <p>Sistem Izin Keluar &middot; Manajemen Waktu Kerja &middot; <span id="footerYear">2026</span></p>
+    </footer>
+  </div>
+
+  <!-- MODAL TAMBAH / EDIT KARYAWAN -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3 class="modal-title" id="modalKaryawanTitle">Tambah Karyawan Baru</h3>
+      <div class="modal-field">
+        <label>Nama Karyawan</label>
+        <input type="text" id="modalNama" placeholder="Masukkan nama lengkap..." />
+      </div>
+      <div class="modal-field">
+        <label>Departemen</label>
+        <input type="text" id="modalDept" placeholder="Masukkan departemen..." />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" id="btnModalCancel" type="button">Batal</button>
+        <button class="btn-modal-save" id="btnModalSave" type="button">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KONFIRMASI KEMBALI -->
+  <div class="modal-overlay" id="modalKembaliOverlay">
+    <div class="modal">
+      <h3 class="modal-title">Karyawan Sudah Kembali?</h3>
+      <p class="modal-desc" id="modalKembaliDesc"></p>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" id="btnKembaliBatal" type="button">Belum</button>
+        <button class="btn-modal-save" id="btnKembaliKonfirmasi" type="button">Ya, Sudah Kembali</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KONFIRMASI HAPUS KARYAWAN -->
+  <div class="modal-overlay" id="modalDeleteOverlay">
+    <div class="modal">
+      <h3 class="modal-title">Hapus Karyawan?</h3>
+      <p class="modal-desc" id="modalDeleteDesc"></p>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" id="btnDeleteBatal" type="button">Batal</button>
+        <button class="btn-modal-save btn-modal-delete" id="btnDeleteKonfirmasi" type="button">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== PARTICLE SYSTEM =====
+    (function initParticles() {
+      var canvas = document.getElementById('particleCanvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var particles = [];
+      var particleCount = 60;
+      var mouse = { x: -1000, y: -1000 };
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      document.addEventListener('mousemove', function(e) {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+
+      function Particle() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.radius = Math.random() * 2 + 0.5;
+        this.opacity = Math.random() * 0.5 + 0.1;
+        var colors = [
+          'rgba(201, 168, 76,',
+          'rgba(99, 102, 241,',
+          'rgba(168, 85, 247,',
+          'rgba(96, 165, 250,',
+        ];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      Particle.prototype.update = function() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        var dx = mouse.x - this.x;
+        var dy = mouse.y - this.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          var force = (150 - dist) / 150;
+          this.vx -= (dx / dist) * force * 0.02;
+          this.vy -= (dy / dist) * force * 0.02;
+        }
+
+        this.vx *= 0.999;
+        this.vy *= 0.999;
+
+        if (this.x < 0) this.x = canvas.width;
+        if (this.x > canvas.width) this.x = 0;
+        if (this.y < 0) this.y = canvas.height;
+        if (this.y > canvas.height) this.y = 0;
+      };
+
+      Particle.prototype.draw = function() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color + this.opacity + ')';
+        ctx.fill();
+      };
+
+      for (var i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+
+      function drawConnections() {
+        for (var i = 0; i < particles.length; i++) {
+          for (var j = i + 1; j < particles.length; j++) {
+            var dx = particles[i].x - particles[j].x;
+            var dy = particles[i].y - particles[j].y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              var opacity = (1 - dist / 120) * 0.12;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = 'rgba(201, 168, 76, ' + opacity + ')';
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+        }
+        drawConnections();
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    })();
+
+    // ===== DATA =====
+    var karyawanData = [];
+    try {
+      var saved = localStorage.getItem('karyawanData');
+      if (saved) karyawanData = JSON.parse(saved);
+    } catch (e) {}
+
+    var selectedKaryawan = null;
+    var selectedKeperluan = null;
+    var riwayatData = [];
+    var nextId = 1;
+    var activeTimers = {};
+    var editingKaryawanId = null;
+
+    try {
+      var savedRiwayat = localStorage.getItem('riwayatData');
+      if (savedRiwayat) riwayatData = JSON.parse(savedRiwayat);
+    } catch (e) {}
+
+    try {
+      var savedTimers = localStorage.getItem('activeTimers');
+      if (savedTimers) activeTimers = JSON.parse(savedTimers);
+    } catch (e) {}
+
+    if (karyawanData.length > 0) {
+      nextId = Math.max.apply(null, karyawanData.map(function(k) { return k.id; })) + 1;
+    }
+
+    var TIMER_DURATION = 15 * 60 * 1000;
+
+    // ===== DOM ELEMENTS =====
+    var clockEl = document.getElementById('clock');
+    var statTotal = document.getElementById('statTotal');
+    var statTepatWaktu = document.getElementById('statTepatWaktu');
+    var statTerlambat = document.getElementById('statTerlambat');
+    var karyawanListEl = document.getElementById('karyawanList');
+    var searchInput = document.getElementById('searchInput');
+    var selectedAvatarEl = document.getElementById('selectedAvatar');
+    var selectedNameEl = document.getElementById('selectedName');
+    var selectedDeptEl = document.getElementById('selectedDept');
+    var employeeInfoSection = document.getElementById('employeeInfoSection');
+    var emptyEmployeeMsg = document.getElementById('emptyEmployeeMsg');
+    var btnMulai = document.getElementById('btnMulai');
+    var btnGanti = document.getElementById('btnGanti');
+    var keteranganInput = document.getElementById('keteranganInput');
+    var riwayatBody = document.getElementById('riwayatBody');
+    var btnHapusRiwayat = document.getElementById('btnHapusRiwayat');
+    var btnTambahKaryawan = document.getElementById('btnTambahKaryawan');
+    var modalOverlay = document.getElementById('modalOverlay');
+    var modalKaryawanTitle = document.getElementById('modalKaryawanTitle');
+    var modalNama = document.getElementById('modalNama');
+    var modalDept = document.getElementById('modalDept');
+    var btnModalCancel = document.getElementById('btnModalCancel');
+    var btnModalSave = document.getElementById('btnModalSave');
+    var modalKembaliOverlay = document.getElementById('modalKembaliOverlay');
+    var modalKembaliDesc = document.getElementById('modalKembaliDesc');
+    var btnKembaliBatal = document.getElementById('btnKembaliBatal');
+    var btnKembaliKonfirmasi = document.getElementById('btnKembaliKonfirmasi');
+    var modalDeleteOverlay = document.getElementById('modalDeleteOverlay');
+    var modalDeleteDesc = document.getElementById('modalDeleteDesc');
+    var btnDeleteBatal = document.getElementById('btnDeleteBatal');
+    var btnDeleteKonfirmasi = document.getElementById('btnDeleteKonfirmasi');
+
+    var pendingKembaliIndex = null;
+    var pendingDeleteId = null;
+
+    // ===== SAVE TO LOCALSTORAGE =====
+    function saveData() {
+      try {
+        localStorage.setItem('karyawanData', JSON.stringify(karyawanData));
+        localStorage.setItem('riwayatData', JSON.stringify(riwayatData));
+        localStorage.setItem('activeTimers', JSON.stringify(activeTimers));
+      } catch (e) {}
+    }
+
+    // ===== CLOCK =====
+    function updateClock() {
+      var now = new Date();
+      var h = String(now.getHours()).padStart(2, '0');
+      var m = String(now.getMinutes()).padStart(2, '0');
+      var s = String(now.getSeconds()).padStart(2, '0');
+      clockEl.textContent = h + ':' + m + ':' + s;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ===== UTILS =====
+    function getInitials(name) {
+      return name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+    }
+
+    function getAvatarClass(id) {
+      return 'avatar-' + (id % 10);
+    }
+
+    function formatTime(date) {
+      var h = String(date.getHours()).padStart(2, '0');
+      var m = String(date.getMinutes()).padStart(2, '0');
+      var s = String(date.getSeconds()).padStart(2, '0');
+      return h + ':' + m + ':' + s;
+    }
+
+    function formatDuration(ms) {
+      var totalSec = Math.floor(ms / 1000);
+      var min = Math.floor(totalSec / 60);
+      var sec = totalSec % 60;
+      return min + ' menit ' + sec + ' detik';
+    }
+
+    // ===== RENDER KARYAWAN LIST =====
+    function renderKaryawanList(filter) {
+      filter = filter || '';
+      var filtered = karyawanData.filter(function(k) {
+        return k.nama.toLowerCase().indexOf(filter.toLowerCase()) !== -1 ||
+               k.dept.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
+      });
+
+      karyawanListEl.innerHTML = '';
+
+      if (karyawanData.length === 0) {
+        karyawanListEl.innerHTML = '<div class="karyawan-empty">Belum ada karyawan.<br>Klik "+ Tambah Karyawan Baru" untuk menambahkan.</div>';
+        return;
+      }
+
+      if (filtered.length === 0) {
+        karyawanListEl.innerHTML = '<div class="karyawan-empty">Tidak ditemukan karyawan dengan kata kunci tersebut.</div>';
+        return;
+      }
+
+      filtered.forEach(function(k) {
+        var isSelected = selectedKaryawan && selectedKaryawan.id === k.id;
+        var isOnLeave = activeTimers[k.id] !== undefined;
+        var div = document.createElement('div');
+        div.className = 'karyawan-item' + (isSelected ? ' selected' : '') + (isOnLeave ? ' on-leave' : '');
+        div.innerHTML =
+          '<div class="avatar ' + getAvatarClass(k.id) + '">' + k.initials + '</div>' +
+          '<div>' +
+            '<div class="karyawan-name">' + k.nama + '</div>' +
+            '<div class="karyawan-dept">' + k.dept + '</div>' +
+          '</div>' +
+          (isSelected ? '<span class="karyawan-check">\u2713</span>' : '') +
+          '<div class="karyawan-actions">' +
+            '<button class="btn-edit-karyawan" data-id="' + k.id + '" title="Edit" type="button">\u270F\uFE0F</button>' +
+            '<button class="btn-delete-karyawan" data-id="' + k.id + '" title="Hapus" type="button">\uD83D\uDDD1\uFE0F</button>' +
+          '</div>';
+
+        div.addEventListener('click', function(e) {
+          if (e.target.closest('.btn-edit-karyawan') || e.target.closest('.btn-delete-karyawan')) return;
+          if (isOnLeave) return;
+          selectedKaryawan = k;
+          renderKaryawanList(searchInput.value);
+          renderSelectedEmployee();
+          updateBtnMulai();
+        });
+
+        karyawanListEl.appendChild(div);
+      });
+
+      // Bind edit buttons
+      var editBtns = document.querySelectorAll('.btn-edit-karyawan');
+      for (var i = 0; i < editBtns.length; i++) {
+        (function(btn) {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var id = parseInt(btn.getAttribute('data-id'));
+            openEditModal(id);
+          });
+        })(editBtns[i]);
+      }
+
+      // Bind delete buttons
+      var delBtns = document.querySelectorAll('.btn-delete-karyawan');
+      for (var j = 0; j < delBtns.length; j++) {
+        (function(btn) {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var id = parseInt(btn.getAttribute('data-id'));
+            openDeleteModal(id);
+          });
+        })(delBtns[j]);
+      }
+    }
+
+    // ===== RENDER SELECTED EMPLOYEE =====
+    function renderSelectedEmployee() {
+      if (!selectedKaryawan) {
+        emptyEmployeeMsg.style.display = 'block';
+        employeeInfoSection.style.display = 'none';
+        btnGanti.style.display = 'none';
+        document.getElementById('selectedEmployee').classList.add('empty-state');
+        return;
+      }
+
+      emptyEmployeeMsg.style.display = 'none';
+      employeeInfoSection.style.display = 'flex';
+      btnGanti.style.display = 'block';
+      document.getElementById('selectedEmployee').classList.remove('empty-state');
+
+      selectedAvatarEl.className = 'avatar ' + getAvatarClass(selectedKaryawan.id);
+      selectedAvatarEl.textContent = selectedKaryawan.initials;
+      selectedNameEl.textContent = selectedKaryawan.nama;
+      selectedDeptEl.textContent = selectedKaryawan.dept;
+    }
+
+    // ===== KEPERLUAN BUTTONS =====
+    var keperluanBtns = document.querySelectorAll('.keperluan-btn');
+    for (var ki = 0; ki < keperluanBtns.length; ki++) {
+      (function(btn) {
+        btn.addEventListener('click', function() {
+          for (var kj = 0; kj < keperluanBtns.length; kj++) {
+            keperluanBtns[kj].classList.remove('selected');
+          }
+          btn.classList.add('selected');
+          selectedKeperluan = btn.getAttribute('data-keperluan');
+          updateBtnMulai();
+        });
+      })(keperluanBtns[ki]);
+    }
+
+    function updateBtnMulai() {
+      btnMulai.disabled = !(selectedKaryawan && selectedKeperluan);
+    }
+
+    // ===== MULAI IZIN =====
+    btnMulai.addEventListener('click', function() {
+      if (!selectedKaryawan || !selectedKeperluan) return;
+      if (activeTimers[selectedKaryawan.id]) return;
+
+      var now = new Date();
+      var waktuKeluar = formatTime(now);
+      var keterangan = keteranganInput.value.trim();
+
+      var entry = {
+        nama: selectedKaryawan.nama,
+        dept: selectedKaryawan.dept,
+        keperluan: selectedKeperluan + (keterangan ? ' (' + keterangan + ')' : ''),
+        waktuKeluar: waktuKeluar,
+        waktuKembali: '\u2014',
+        durasi: '\u2014',
+        status: 'Sedang Keluar',
+        startTime: now.getTime(),
+        karyawanId: selectedKaryawan.id,
+      };
+
+      riwayatData.push(entry);
+
+      activeTimers[selectedKaryawan.id] = {
+        startTime: now.getTime(),
+        riwayatIndex: riwayatData.length - 1,
+      };
+
+      selectedKeperluan = null;
+      for (var kj = 0; kj < keperluanBtns.length; kj++) {
+        keperluanBtns[kj].classList.remove('selected');
+      }
+      keteranganInput.value = '';
+      updateBtnMulai();
+
+      renderRiwayat();
+      updateStats();
+      renderKaryawanList(searchInput.value);
+      saveData();
+    });
+
+    // ===== RENDER RIWAYAT =====
+    function renderRiwayat() {
+      if (riwayatData.length === 0) {
+        riwayatBody.innerHTML = '<tr><td colspan="8" class="empty-msg">\u2014 Belum ada data izin hari ini \u2014</td></tr>';
+        return;
+      }
+
+      riwayatBody.innerHTML = '';
+      riwayatData.forEach(function(entry, index) {
+        var tr = document.createElement('tr');
+
+        var statusHtml = '';
+        if (entry.status === 'Sedang Keluar') {
+          statusHtml = '<span class="status-badge sedang-keluar" data-index="' + index + '">\u23F3 Sedang Keluar</span>';
+        } else if (entry.status === 'Tepat Waktu') {
+          statusHtml = '<span class="status-badge tepat-waktu">\u2705 Tepat Waktu</span>';
+        } else {
+          statusHtml = '<span class="status-badge terlambat">\u26A0\uFE0F Terlambat</span>';
+        }
+
+        tr.innerHTML =
+          '<td>' + (index + 1) + '</td>' +
+          '<td>' + entry.nama + '</td>' +
+          '<td>' + entry.dept + '</td>' +
+          '<td>' + entry.keperluan + '</td>' +
+          '<td>' + entry.waktuKeluar + '</td>' +
+          '<td>' + entry.waktuKembali + '</td>' +
+          '<td>' + entry.durasi + '</td>' +
+          '<td>' + statusHtml + '</td>';
+        riwayatBody.appendChild(tr);
+      });
+
+      var badges = document.querySelectorAll('.status-badge.sedang-keluar');
+      for (var bi = 0; bi < badges.length; bi++) {
+        (function(badge) {
+          badge.addEventListener('click', function() {
+            var idx = parseInt(badge.getAttribute('data-index'));
+            showKembaliModal(idx);
+          });
+        })(badges[bi]);
+      }
+    }
+
+    // ===== KEMBALI MODAL =====
+    function showKembaliModal(index) {
+      var entry = riwayatData[index];
+      pendingKembaliIndex = index;
+      modalKembaliDesc.textContent = entry.nama + ' (' + entry.dept + ') \u2014 Keperluan: ' + entry.keperluan;
+      modalKembaliOverlay.classList.add('active');
+    }
+
+    btnKembaliBatal.addEventListener('click', function() {
+      modalKembaliOverlay.classList.remove('active');
+      pendingKembaliIndex = null;
+    });
+
+    btnKembaliKonfirmasi.addEventListener('click', function() {
+      if (pendingKembaliIndex === null) return;
+
+      var entry = riwayatData[pendingKembaliIndex];
+      var now = new Date();
+      var durasi = now.getTime() - entry.startTime;
+
+      entry.waktuKembali = formatTime(now);
+      entry.durasi = formatDuration(durasi);
+      entry.status = durasi <= TIMER_DURATION ? 'Tepat Waktu' : 'Terlambat';
+
+      delete activeTimers[entry.karyawanId];
+
+      modalKembaliOverlay.classList.remove('active');
+      pendingKembaliIndex = null;
+
+      renderRiwayat();
+      updateStats();
+      renderKaryawanList(searchInput.value);
+      saveData();
+    });
+
+    // ===== UPDATE STATS =====
+    function updateStats() {
+      var total = riwayatData.length;
+      var tepatWaktu = riwayatData.filter(function(r) { return r.status === 'Tepat Waktu'; }).length;
+      var terlambat = riwayatData.filter(function(r) { return r.status === 'Terlambat'; }).length;
+
+      statTotal.textContent = total;
+      statTepatWaktu.textContent = tepatWaktu;
+      statTerlambat.textContent = terlambat;
+    }
+
+    // ===== SEARCH =====
+    searchInput.addEventListener('input', function() {
+      renderKaryawanList(searchInput.value);
+    });
+
+    // ===== GANTI KARYAWAN =====
+    btnGanti.addEventListener('click', function() {
+      searchInput.focus();
+    });
+
+    // ===== HAPUS RIWAYAT =====
+    btnHapusRiwayat.addEventListener('click', function() {
+      if (riwayatData.length === 0) return;
+      if (!confirm('Hapus semua riwayat izin hari ini?')) return;
+
+      riwayatData.forEach(function(entry) {
+        if (entry.status === 'Sedang Keluar') {
+          delete activeTimers[entry.karyawanId];
+        }
+      });
+
+      riwayatData = [];
+      renderRiwayat();
+      updateStats();
+      renderKaryawanList(searchInput.value);
+      saveData();
+    });
+
+    // ===== TAMBAH KARYAWAN MODAL =====
+    btnTambahKaryawan.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      editingKaryawanId = null;
+      modalKaryawanTitle.textContent = 'Tambah Karyawan Baru';
+      modalNama.value = '';
+      modalDept.value = '';
+      modalOverlay.classList.add('active');
+      setTimeout(function() { modalNama.focus(); }, 150);
+    });
+
+    // ===== EDIT KARYAWAN MODAL =====
+    function openEditModal(id) {
+      var k = null;
+      for (var i = 0; i < karyawanData.length; i++) {
+        if (karyawanData[i].id === id) { k = karyawanData[i]; break; }
+      }
+      if (!k) return;
+      editingKaryawanId = id;
+      modalKaryawanTitle.textContent = 'Edit Karyawan';
+      modalNama.value = k.nama;
+      modalDept.value = k.dept;
+      modalOverlay.classList.add('active');
+      setTimeout(function() { modalNama.focus(); }, 150);
+    }
+
+    // ===== DELETE KARYAWAN MODAL =====
+    function openDeleteModal(id) {
+      var k = null;
+      for (var i = 0; i < karyawanData.length; i++) {
+        if (karyawanData[i].id === id) { k = karyawanData[i]; break; }
+      }
+      if (!k) return;
+      pendingDeleteId = id;
+      modalDeleteDesc.textContent = 'Apakah Anda yakin ingin menghapus "' + k.nama + ' (' + k.dept + ')" dari daftar karyawan?';
+      modalDeleteOverlay.classList.add('active');
+    }
+
+    btnDeleteBatal.addEventListener('click', function() {
+      modalDeleteOverlay.classList.remove('active');
+      pendingDeleteId = null;
+    });
+
+    btnDeleteKonfirmasi.addEventListener('click', function() {
+      if (pendingDeleteId === null) return;
+
+      karyawanData = karyawanData.filter(function(k) { return k.id !== pendingDeleteId; });
+
+      if (selectedKaryawan && selectedKaryawan.id === pendingDeleteId) {
+        selectedKaryawan = karyawanData.length > 0 ? karyawanData[0] : null;
+      }
+
+      delete activeTimers[pendingDeleteId];
+
+      modalDeleteOverlay.classList.remove('active');
+      pendingDeleteId = null;
+
+      renderKaryawanList(searchInput.value);
+      renderSelectedEmployee();
+      updateBtnMulai();
+      saveData();
+    });
+
+    modalDeleteOverlay.addEventListener('click', function(e) {
+      if (e.target === modalDeleteOverlay) {
+        modalDeleteOverlay.classList.remove('active');
+        pendingDeleteId = null;
+      }
+    });
+
+    btnModalCancel.addEventListener('click', function() {
+      modalOverlay.classList.remove('active');
+      editingKaryawanId = null;
+    });
+
+    btnModalSave.addEventListener('click', function() {
+      var nama = modalNama.value.trim();
+      var dept = modalDept.value.trim();
+      if (!nama || !dept) {
+        alert('Mohon isi nama dan departemen.');
+        return;
+      }
+
+      var initials = getInitials(nama);
+
+      if (editingKaryawanId !== null) {
+        var k = null;
+        for (var i = 0; i < karyawanData.length; i++) {
+          if (karyawanData[i].id === editingKaryawanId) { k = karyawanData[i]; break; }
+        }
+        if (k) {
+          k.nama = nama;
+          k.dept = dept;
+          k.initials = initials;
+          if (selectedKaryawan && selectedKaryawan.id === editingKaryawanId) {
+            selectedKaryawan = k;
+          }
+        }
+        editingKaryawanId = null;
+      } else {
+        var newKaryawan = {
+          id: nextId++,
+          nama: nama,
+          dept: dept,
+          initials: initials,
+        };
+
+        karyawanData.push(newKaryawan);
+        selectedKaryawan = newKaryawan;
+      }
+
+      modalOverlay.classList.remove('active');
+      renderKaryawanList(searchInput.value);
+      renderSelectedEmployee();
+      updateBtnMulai();
+      saveData();
+    });
+
+    // Allow Enter key to submit modal
+    modalNama.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        modalDept.focus();
+      }
+    });
+
+    modalDept.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnModalSave.click();
+      }
+    });
+
+    // Close modals on overlay click
+    modalOverlay.addEventListener('click', function(e) {
+      if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('active');
+        editingKaryawanId = null;
+      }
+    });
+    modalKembaliOverlay.addEventListener('click', function(e) {
+      if (e.target === modalKembaliOverlay) {
+        modalKembaliOverlay.classList.remove('active');
+        pendingKembaliIndex = null;
+      }
+    });
+
+    // ===== FOOTER YEAR =====
+    document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+    // ===== INIT =====
+    if (karyawanData.length > 0) {
+      selectedKaryawan = karyawanData[0];
+    }
+
+    renderKaryawanList();
+    renderSelectedEmployee();
+    renderRiwayat();
+    updateStats();
+    updateBtnMulai();
+  </script>
+</body>
+</html>
